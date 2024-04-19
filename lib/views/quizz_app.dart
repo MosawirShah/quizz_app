@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:quiz_app/model/question.dart';
+import 'package:quiz_app/components/question_data.dart';
 
 class QuizzApp extends StatefulWidget {
-  const QuizzApp({Key? key}) : super(key: key);
+  const QuizzApp({super.key});
 
   @override
   State<QuizzApp> createState() => _QuizzAppState();
@@ -11,16 +13,41 @@ class QuizzApp extends StatefulWidget {
 
 class _QuizzAppState extends State<QuizzApp> {
   List<Icon> scoreKeeper = [];
+  QuestionData questionData = QuestionData();
 
-  List<String> questions = [
-    'You can lead a cow down stairs but not up stairs.',
-    'Approximately one quarter of human bones are in the feet.',
-    'A slug\'s blood is green.'
-  ];
+  showIcons(bool userPickedAnswer){
+    setState(() {
+    if(questionData.isFinished() == true){
 
-  int questionNumber = 0;
-  
-  List<bool> answers = [false, true, true];
+      showDialog(context: context, builder: (context){
+        return AlertDialog(
+          title: Text("Finished!!"),
+          content: Text("Quizz has been endded",style: TextStyle(fontSize: 18),),
+          actions: [
+            RawMaterialButton(
+              child: Text("Ok",style: TextStyle(fontSize: 18),),
+                onPressed: (){
+              Navigator.of(context).pop();
+            })
+          ],
+        );
+      });
+      questionData.resetQuestionNumber();
+      scoreKeeper = [];
+
+    }else{
+      bool correctAnswer = questionData.getAnswerText();
+      if(correctAnswer == userPickedAnswer){
+        scoreKeeper.add(const Icon(Icons.check,color: Colors.green,));
+      }else{
+        scoreKeeper.add(const Icon(Icons.close,color: Colors.red,));
+      }
+        questionData.nextQuestion();
+    }});
+
+
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +64,7 @@ class _QuizzAppState extends State<QuizzApp> {
                     child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
-                    questions[questionNumber],
+                   questionData.getQuestionText(),
                     style: TextStyle(color: Colors.white, fontSize: 24),
                     textAlign: TextAlign.center,
                   ),
@@ -54,20 +81,7 @@ class _QuizzAppState extends State<QuizzApp> {
                       style: TextStyle(color: Colors.white, fontSize: 20),
                     ),
                     onPressed: () {
-                      bool correctAnswer = answers[questionNumber];
-                      if(correctAnswer == true){
-                        scoreKeeper.add(const Icon(Icons.check,color: Colors.green,));
-                      }else{
-                        scoreKeeper.add(const Icon(Icons.close,color: Colors.red,));
-                      }
-                     setState(() {
-                       if(questionNumber < 2){
-                         questionNumber ++;
-                       }else{
-                         print("Length exceed");
-                       }
-                     });
-                      print("Question number is : $questionNumber");
+                      showIcons(true);
                     }),
               ),
             ),
@@ -83,22 +97,8 @@ class _QuizzAppState extends State<QuizzApp> {
                       style: TextStyle(color: Colors.white, fontSize: 20),
                     ),
                     onPressed: () {
+                      showIcons(false);
 
-                      bool correctAnswer = answers[questionNumber];
-                      if(correctAnswer == false){
-                        scoreKeeper.add(const Icon(Icons.check,color: Colors.green,));
-                      }else{
-                        scoreKeeper.add(const Icon(Icons.close,color: Colors.red,));
-                      }
-
-                      setState(() {
-                       if(questionNumber<2){
-                         questionNumber ++;
-                       }else{
-                         print("Length exceed");
-                       }
-                      });
-                      print("Question number is : $questionNumber");
                     }),
               ),
             ),
@@ -112,5 +112,6 @@ class _QuizzAppState extends State<QuizzApp> {
         ),
       ),
     );
+
   }
 }
